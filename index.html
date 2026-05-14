@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Внутренняя таблица администраторов UNION ОДРП 4</title>
+
+
+<meta http-equiv="Content-Security-Policy" content="
+    default-src 'none';
+    script-src 'self';
+    style-src 'self' 'unsafe-inline';
+    img-src 'self' https://i.imgur.com https://*.steamstatic.com https://steamcommunity.com data:;
+    connect-src 'self' https://api.glent1754.workers.dev https://red-brook-b76e.glent1754.workers.dev;
+    font-src 'self';
+    base-uri 'self';
+    form-action 'self';
+    object-src 'none';
+    media-src 'none';
+    worker-src 'none';
+    manifest-src 'self';
+">
+    
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    
+
+    
+
+
+    <meta http-equiv="Permissions-Policy" content="
+        camera=(), 
+        microphone=(), 
+        geolocation=(), 
+        interest-cohort=(), 
+        payment=(), 
+        usb=(), 
+        magnetometer=(), 
+        gyroscope=(), 
+        accelerometer=()
+    ">
+
+    
+    <link rel="icon" href="https://i.imgur.com/p1nZ95n.png" type="image/png">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+
+
+
+<dialog class="confirm-dialog" id="confirmDlg">
+    <form method="dialog">
+        <div class="confirm-dialog__body">
+            <i class="ic ic-warning ic-48"></i>
+            <p id="confirmText">Вы уверены?</p>
+        </div>
+        <menu class="confirm-dialog__actions">
+            <button type="submit" value="yes" class="btn-save confirm-btn-danger" id="confirmYes">Удалить</button>
+            <button type="submit" value="cancel" class="btn-cancel">Отмена</button>
+        </menu>
+    </form>
+</dialog>
+
+
+<div class="modal-overlay hidden" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-box modal-glass-color">
+        <div class="modal-header">
+            <span id="modalTitle">Добавить участника</span>
+            <button type="button" class="modal-close" id="modalClose" aria-label="Закрыть">&times;</button>
+        </div>
+        <form id="memberForm" autocomplete="off" novalidate>
+            <label class="field">
+                <span class="field__label">Никнейм</span>
+                <input type="text" id="fNick" name="nick" required 
+                       maxlength="64" 
+                       pattern="[a-zA-Zа-яА-ЯёЁ0-9_\-\s\.\[\]]{1,64}"
+                       spellcheck="false"
+                       autocomplete="off">
+            </label>
+            <label class="field">
+                <span class="field__label">STEAMID32</span>
+                <input type="text" id="fSteam" required 
+                       maxlength="30" 
+                       pattern="STEAM_[01]:[01]:\d{1,15}"
+                       placeholder="STEAM_0:1:12345678"
+                       spellcheck="false"
+                       autocomplete="off">
+            </label>
+            <label class="field">
+                <span class="field__label">Ранг</span>
+                <select id="fRank" required>
+                    <option value="intern">intern</option>
+                    <option value="moderator">moderator</option>
+                    <option value="operator">operator</option>
+                    <option value="admin">admin</option>
+                    <option value="senior_admin">senior_admin</option>
+                    <option value="assistant">assistant</option>
+                    <option value="sudo_curator">sudo_curator</option>
+                    <option value="curator">curator</option>
+                </select>
+            </label>
+            <label class="field">
+                <span class="field__label">Должность</span>
+                <select id="fRole" required>
+                    <option value="Следящий">Следящий</option>
+                    <option value="Старший следящий">Старший следящий</option>
+                    <option value="Зам главы следящих">Зам главы следящих</option>
+                    <option value="Глава следящих">Глава следящих</option>
+                </select>
+            </label>
+            <div class="modal-footer">
+                <button type="submit" class="btn-save">Сохранить</button>
+                <button type="button" class="btn-cancel" id="btnCancel">Отмена</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<div class="modal-overlay hidden" id="suspectModal" role="dialog" aria-modal="true" aria-labelledby="suspectModalTitle">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span id="suspectModalTitle">Добавить сомнительного</span>
+            <button type="button" class="modal-close" id="suspectClose" aria-label="Закрыть">&times;</button>
+        </div>
+        <form id="suspectForm" autocomplete="off" novalidate>
+            <label class="field">
+                <span class="field__label">Никнейм</span>
+                <input type="text" id="sNick" required 
+                       maxlength="64" 
+                       spellcheck="false"
+                       autocomplete="off">
+            </label>
+            <label class="field">
+                <span class="field__label">SteamID</span>
+                <input type="text" id="sSteam" required 
+                       maxlength="30" 
+                       pattern="STEAM_[01]:[01]:\d{1,15}"
+                       spellcheck="false"
+                       autocomplete="off">
+            </label>
+            <label class="field">
+                <span class="field__label">Причина</span>
+                <input type="text" id="sReason" required 
+                       maxlength="500"
+                       autocomplete="off">
+            </label>
+            <div class="field-row-2col">
+                <label class="field">
+                    <span class="field__label">Нарушения</span>
+                    <input type="number" id="sViolations" min="0" max="9999" value="0" step="1">
+                </label>
+                <label class="field">
+                    <span class="field__label">Отчёты</span>
+                    <input type="number" id="sReports" min="0" max="9999" value="0" step="1">
+                </label>
+            </div>
+            <label class="field">
+                <span class="field__label">Статус</span>
+                <select id="sStatus" required>
+                    <option value="watching">Активно</option>
+                    <option value="warned">Не активно</option>
+                </select>
+            </label>
+            <div class="modal-footer">
+                <button type="submit" class="btn-save">Сохранить</button>
+                <button type="button" class="btn-cancel" id="suspectBtnCancel">Отмена</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<dialog class="topic-dialog" id="topic-dlg" aria-labelledby="topic-dlg-title">
+    <div class="topic-dialog__inner">
+        <div class="topic-dialog__head">
+            <span id="topic-dlg-title">Создать тему</span>
+            <button type="button" class="modal-close" id="topicDlgClose" aria-label="Закрыть">&times;</button>
+        </div>
+        <form id="topicForm" method="dialog" autocomplete="off" novalidate>
+            <label class="field">
+                <span class="field__label">Название</span>
+                <input type="text" id="topicTitle" required 
+                       maxlength="150"
+                       spellcheck="false"
+                       autocomplete="off">
+            </label>
+            <label class="field">
+                <span class="field__label">Описание</span>
+                <textarea id="topicDesc" rows="6" required 
+                          maxlength="5000"
+                          spellcheck="true"></textarea>
+            </label>
+            <div class="checks-row">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="topicPinned">
+                    <span class="checkbox-custom"></span> Закрепить
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="topicLocked">
+                    <span class="checkbox-custom"></span> Закрыть ответы
+                </label>
+            </div>
+            <menu class="topic-dialog__footer">
+                <button type="submit" value="publish" class="btn-save">Опубликовать</button>
+                <button type="button" value="cancel" class="btn-cancel" id="topicBtnCancel">Отмена</button>
+            </menu>
+        </form>
+    </div>
+</dialog>
+
+
+<div class="modal-overlay hidden" id="questionModal" role="dialog" aria-modal="true" aria-labelledby="questionModalTtl">
+    <div class="modal-box modal-box-wide">
+        <div class="modal-header">
+            <span id="questionModalTtl">Добавить вопрос</span>
+            <button type="button" class="modal-close" id="questionClose" aria-label="Закрыть">&times;</button>
+        </div>
+        <form id="questionForm" autocomplete="off" novalidate>
+            <div class="field-row-2col">
+                <label class="field">
+                    <span class="field__label">Группа</span>
+                    <select id="qGroup" required>
+                        <option value="terms">Термины</option>
+                        <option value="profession_rules">Правила профессий</option>
+                        <option value="admin_rules">Правила администрации</option>
+                        <option value="situations">Ситуации</option>
+                    </select>
+                </label>
+                <label class="field">
+                    <span class="field__label">Сложность</span>
+                    <select id="qDifficulty" required>
+                        <option value="easy">Лёгкая</option>
+                        <option value="medium">Средняя</option>
+                        <option value="hard">Высокая</option>
+                    </select>
+                </label>
+            </div>
+            <label class="field">
+                <span class="field__label">Вопрос</span>
+                <textarea id="qDescription" class="modal-textarea" rows="4" required 
+                          maxlength="2000"></textarea>
+            </label>
+            <label class="field">
+                <span class="field__label">Ответ</span>
+                <textarea id="qAnswer" class="modal-textarea" rows="4" required 
+                          maxlength="2000"></textarea>
+            </label>
+            <div class="modal-footer">
+                <button type="submit" class="btn-save">Сохранить</button>
+                <button type="button" class="btn-cancel" id="questionBtnCancel">Отмена</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<div class="modal-overlay hidden" id="settingsModal" role="dialog" aria-modal="true">
+    <div class="modal-box modal-box-wide modal-glass-color modal-box-scroll">
+        <div class="modal-header">
+            <span>Настройки</span>
+            <button type="button" class="modal-close" id="settingsClose" aria-label="Закрыть">&times;</button>
+        </div>
+        <div class="settings-body">
+            <div class="settings-section">
+                <h4 class="settings-section-title">Яркость фона</h4>
+                <div class="settings-brightness">
+                    <input type="range" id="bgBrightness" min="10" max="100" value="60" class="settings-slider">
+                    <span class="settings-slider-val" id="bgBrightnessVal">60%</span>
+                </div>
+            </div>
+            <div class="settings-section">
+                <h4 class="settings-section-title">Вид вкладок</h4>
+                <div class="settings-tab-styles">
+                    <button type="button" class="settings-tab-style-btn active" data-tab-style="default">
+                        <div class="tab-style-preview tab-style-preview--default">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <span>Стандартный</span>
+                    </button>
+                    <button type="button" class="settings-tab-style-btn" data-tab-style="glass-rect">
+                        <div class="tab-style-preview tab-style-preview--glass">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <span>Стекло</span>
+                    </button>
+                </div>
+            </div>
+            <div class="settings-section" id="tabPositionSection">
+                <h4 class="settings-section-title">Расположение вкладок</h4>
+                <div class="settings-positions">
+                    <button type="button" class="settings-pos-btn active" data-pos="top">Сверху</button>
+                    <button type="button" class="settings-pos-btn" data-pos="bottom">Снизу</button>
+                    <button type="button" class="settings-pos-btn" data-pos="left">Слева</button>
+                    <button type="button" class="settings-pos-btn" data-pos="right">Справа</button>
+                </div>
+            </div>
+            <div class="settings-section">
+                <h4 class="settings-section-title">Фон интерфейса</h4>
+                <div class="background-grid" id="backgroundGrid"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="notif-panel hidden" id="notifPanel" role="complementary" aria-label="Уведомления">
+    <div class="notif-panel-header">
+        <span>Уведомления</span>
+        <button type="button" class="notif-clear-btn" id="notifClearAll">Очистить</button>
+    </div>
+    <div class="notif-list" id="notifList">
+        <div class="notif-empty">Нет уведомлений</div>
+    </div>
+</div>
+
+
+
+
+<div class="bg-layer" id="bgLayer" aria-hidden="true"></div>
+<div class="ban-container" id="banContainer" aria-hidden="true"></div>
+<div class="overlay" aria-hidden="true"></div>
+
+
+
+
+<div class="welcome-screen" id="welcomeScreen" role="main">
+    <div class="welcome-noise" aria-hidden="true"></div>
+    <div class="welcome-glow welcome-glow--1" aria-hidden="true"></div>
+    <div class="welcome-glow welcome-glow--2" aria-hidden="true"></div>
+    <div class="welcome-glow welcome-glow--3" aria-hidden="true"></div>
+    <div class="welcome-vignette" aria-hidden="true"></div>
+
+    <div class="welcome-glass-card" id="welcomeCard">
+        <div class="welcome-glass-card__shine" aria-hidden="true"></div>
+        <div class="welcome-glass-card__edge" aria-hidden="true"></div>
+
+        <div class="welcome-glass-card__inner">
+            <div class="welcome-logo-block">
+                <div class="welcome-logo-ring" aria-hidden="true"></div>
+                <div class="welcome-logo-ring welcome-logo-ring--2" aria-hidden="true"></div>
+                <img src="https://i.imgur.com/p1nZ95n.png" alt="Логотип"
+                     class="welcome-logo"
+                     referrerpolicy="no-referrer"
+                     width="96" height="96">
+            </div>
+
+            <div class="welcome-text-block">
+                <h1 class="welcome-heading">
+                    <span class="welcome-heading__main">UNION ОДРП 4</span>
+                    <span class="welcome-heading__divider" aria-hidden="true"></span>
+                    <span class="welcome-heading__sub">СЛЕДЯЩИЕ</span>
+                </h1>
+            </div>
+
+            <div class="welcome-features">
+                <div class="welcome-feature">
+                    <div class="welcome-feature__icon">
+                        <i class="ic ic-shield" aria-hidden="true"></i>
+                    </div>
+                    <span class="welcome-feature__text">Управление составом</span>
+                </div>
+                <div class="welcome-feature">
+                    <div class="welcome-feature__icon">
+                        <i class="ic ic-chart" aria-hidden="true"></i>
+                    </div>
+                    <span class="welcome-feature__text">Статистика и отчёты</span>
+                </div>
+                <div class="welcome-feature">
+                    <div class="welcome-feature__icon">
+                        <i class="ic ic-help" aria-hidden="true"></i>
+                    </div>
+                    <span class="welcome-feature__text">Опросы и проверки</span>
+                </div>
+            </div>
+
+            <button type="button" class="welcome-enter" id="welcomeEnterBtn">
+                <span class="welcome-enter__bg" aria-hidden="true"></span>
+                <span class="welcome-enter__text">Открыть таблицу следящих</span>
+                <i class="ic ic-arrow-left welcome-enter__arrow" aria-hidden="true"></i>
+            </button>
+
+            <div class="welcome-credits">
+                <span><strong>Основатель:</strong> aga</span>
+                <span><strong>Помощник:</strong> T1Ran</span>
+                <span><strong>Тестер:</strong> ki-p</span>
+                <span><strong>Курировал:</strong> ЭлектроДед</span>
+            </div>
+
+            <div class="welcome-footer-line">
+
+                <span class="welcome-footer-dot" aria-hidden="true"></span>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="login-screen" id="loginScreen" role="main">
+    <div class="login-parallax-bg" id="loginParallaxBg" aria-hidden="true">
+        <img src="https://i.imgur.com/wTda5QV.png" alt="" 
+             class="login-parallax-img" id="loginParallaxImg"
+             referrerpolicy="no-referrer"
+             loading="eager">
+    </div>
+    <div class="login-fog" id="loginFog" aria-hidden="true"></div>
+    <div class="login-vignette" aria-hidden="true"></div>
+    <div class="login-particles-wrap" id="loginParticlesWrap" aria-hidden="true"></div>
+
+    <div class="login-box-3d-wrapper" id="loginBox3dWrapper">
+        <div class="login-box-3d" id="loginBox3d">
+            <div class="login-box-bark-edge login-box-bark-left" aria-hidden="true"></div>
+            <div class="login-box-bark-edge login-box-bark-right" aria-hidden="true"></div>
+            <div class="login-box-inner">
+                <div class="login-box-vine login-box-vine-tl" aria-hidden="true"></div>
+                <div class="login-box-vine login-box-vine-tr" aria-hidden="true"></div>
+                <div class="login-box-vine login-box-vine-bl" aria-hidden="true"></div>
+
+                <div class="login-wood-ring" aria-hidden="true"></div>
+
+                <img src="https://i.imgur.com/p1nZ95n.png" alt="Логотип" class="login-logo"
+                     referrerpolicy="no-referrer"
+                     width="80" height="80">
+                <h2 class="login-title">ВХОД</h2>
+
+                <form id="loginForm" autocomplete="off" novalidate>
+                    <div class="login-field">
+                        <div class="login-field-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <input type="text" id="loginUser" 
+                               placeholder="Логин" 
+                               required
+                               maxlength="64"
+                               autocomplete="username"
+                               autocapitalize="off"
+                               spellcheck="false"
+                               enterkeyhint="next">
+                        <div class="login-field-line" aria-hidden="true"></div>
+                    </div>
+                    <div class="login-field">
+                        <div class="login-field-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <input type="password" id="loginPass" 
+                               placeholder="Пароль" 
+                               required
+                               maxlength="128"
+                               autocomplete="current-password"
+                               spellcheck="false"
+                               enterkeyhint="done">
+                        <div class="login-field-line" aria-hidden="true"></div>
+                    </div>
+                    <div class="login-error" id="loginError" role="alert" aria-live="polite"></div>
+                    <button type="submit" class="btn-login-wood">
+                        <span class="btn-login-wood-text">ВОЙТИ</span>
+                        <span class="btn-login-wood-shine" aria-hidden="true"></span>
+                    </button>
+                </form>
+
+                <div class="login-box-leaves" aria-hidden="true">
+                    <span class="login-leaf leaf-1">🍃</span>
+                    <span class="login-leaf leaf-2">🌿</span>
+                    <span class="login-leaf leaf-3">🍂</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="flashlight-cursor" id="flashCursor" aria-hidden="true"></div>
+<div id="custom-cursor" aria-hidden="true"></div>
+
+
+
+
+<div class="norm-fab hidden" id="normFab" aria-hidden="true">
+    <button type="button" class="norm-btn" id="normTrigger" data-clicks="0">
+        <i class="ic ic-star" aria-hidden="true"></i>
+        <span>Выполнить норму</span>
+    </button>
+</div>
+<div class="norm-popup hidden" id="normPopup" data-state="idle" role="dialog" aria-modal="false">
+    <div class="norm-flash" aria-hidden="true"></div>
+    <div class="norm-content">
+        <div class="norm-msg" id="normMsg">Сладенькое<br>заработать надо</div>
+            <div class="norm-img-wrap" id="normImgWrap">
+                <img src="https://i.imgur.com/F0BeH0x.png" alt="" 
+                    referrerpolicy="no-referrer"
+                    loading="lazy">
+            </div>
+    </div>
+</div>
+
+
+
+
+<div class="main-app hidden" id="mainApp" role="main">
+
+    <!-- Header -->
+    <header class="top-bar" role="banner">
+        <div class="top-left">
+            <img src="https://i.imgur.com/p1nZ95n.png" alt="Логотип" class="header-logo"
+                 referrerpolicy="no-referrer"
+                 width="36" height="36">
+            <span class="header-title">UNION ОДРП 4 | СЛЕДЯЩИЕ</span>
+        </div>
+        <div class="top-right">
+            <div class="header-profile">
+                <div class="header-avatar-wrap">
+                    <img id="headerAvatar" 
+                         src="https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_medium.jpg" 
+                         alt="Аватар"
+                         referrerpolicy="no-referrer"
+                         width="36" height="36">
+                </div>
+                <div class="header-info">
+                    <span class="user-name" id="currentUser"></span>
+                    <span class="user-rank" id="currentUserRank">Загрузка...</span>
+                </div>
+            </div>
+            <button type="button" class="btn-header-icon" id="btnNotif" title="Уведомления" aria-label="Уведомления">
+                <i class="ic ic-bell" aria-hidden="true"></i>
+                <span class="notif-badge hidden" id="notifBadge" aria-label="Непрочитанные">0</span>
+            </button>
+            <button type="button" class="btn-header-icon" id="btnSettings" title="Настройки" aria-label="Настройки">
+                <i class="ic ic-settings" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="btn-logout" id="btnLogout" title="Выход" aria-label="Выйти">
+                <i class="ic ic-logout" aria-hidden="true"></i>
+            </button>
+        </div>
+    </header>
+
+
+    <nav class="tab-bar" id="mainTabs" role="tablist" aria-label="Навигация"></nav>
+    <nav class="tab-bar-glass hidden" id="glassTabBar" role="tablist" aria-label="Навигация"></nav>
+
+    <section class="tab-content" id="tabDashboard" role="tabpanel">
+        <div class="dashboard" id="dashboardInner">
+            <div class="dash-cards" id="dashCards">
+                <div class="dash-card" data-type="members">
+                    <div class="dash-card-icon" aria-hidden="true"><i class="ic ic-grid"></i></div>
+                    <div class="dash-card-value" id="dashMembers">0</div>
+                    <div class="dash-card-label">Участников</div>
+                </div>
+                <div class="dash-card" data-type="suspects">
+                    <div class="dash-card-icon" aria-hidden="true"><i class="ic ic-shield"></i></div>
+                    <div class="dash-card-value" id="dashSuspects">0</div>
+                    <div class="dash-card-label">Сомнительных</div>
+                </div>
+                <div class="dash-card" data-type="hours">
+                    <div class="dash-card-icon" aria-hidden="true"><i class="ic ic-clock"></i></div>
+                    <div class="dash-card-value" id="dashHours">0</div>
+                    <div class="dash-card-label">Часов всего</div>
+                </div>
+                <div class="dash-card" data-type="topics">
+                    <div class="dash-card-icon" aria-hidden="true"><i class="ic ic-msg"></i></div>
+                    <div class="dash-card-value" id="dashTopics">0</div>
+                    <div class="dash-card-label">Тем</div>
+                </div>
+            </div>
+
+            <div class="dash-row">
+                <div class="dash-panel dash-chart-panel">
+                    <div class="dash-panel-header">
+                        <h3>Статистика</h3>
+                        <div class="dash-chart-toggle">
+                            <button type="button" class="dash-toggle-btn active" data-chart="bar">Столбцы</button>
+                            <button type="button" class="dash-toggle-btn" data-chart="line">Линия</button>
+                        </div>
+                    </div>
+                    <div class="dash-chart-wrap">
+                        <canvas id="dashChart" width="600" height="280" aria-label="График статистики"></canvas>
+                    </div>
+                </div>
+                <div class="dash-panel dash-activity-panel">
+                    <h3>Последняя активность</h3>
+                    <div class="dash-activity-list" id="dashActivity">
+                        <div class="notif-empty">Загрузка...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="tab-content" id="tabTable" data-loaded="false" role="tabpanel">
+        <div class="section-block">
+            <div class="table-toolbar">
+                <div class="search-box" id="memberSearchBox">
+                    <i class="ic ic-search" aria-hidden="true"></i>
+                    <input type="search" id="memberSearch" 
+                           placeholder="Поиск по нику или Steam ID..." 
+                           class="search-input"
+                           maxlength="100"
+                           spellcheck="false"
+                           autocomplete="off">
+                </div>
+                <div class="filter-chips" role="group" aria-label="Фильтр по должности">
+                    <button type="button" class="filter-chip active" data-filter-role="">Все</button>
+                    <button type="button" class="filter-chip" data-filter-role="Глава следящих">Глава</button>
+                    <button type="button" class="filter-chip" data-filter-role="Зам главы следящих">Зам главы</button>
+                    <button type="button" class="filter-chip" data-filter-role="Старший следящий">Старший</button>
+                    <button type="button" class="filter-chip" data-filter-role="Следящий">Следящий</button>
+                </div>
+            </div>
+        </div>
+        <div class="section-block">
+            <h3 class="section-title section-title--shield">Старший Состав Следящих</h3>
+            <div class="members-grid" id="gridSenior"></div>
+        </div>
+        <div class="section-block">
+            <h3 class="section-title section-title--group">Состав Следящих</h3>
+            <div class="members-grid" id="gridJunior"></div>
+        </div>
+        <div class="editor-panel" id="editorPanel">
+            <button type="button" class="btn-add btn-add-blur" id="btnAdd">+ Добавить участника</button>
+        </div>
+    </section>
+
+    <section class="tab-content" id="tabStats" data-loaded="false" role="tabpanel">
+        <div class="section-block">
+            <div class="table-toolbar">
+                <h3 class="section-title section-title--chart">Статистика участников</h3>
+                <div class="search-box">
+                    <i class="ic ic-search" aria-hidden="true"></i>
+                    <input type="search" id="statsSearch" 
+                           placeholder="Поиск..." 
+                           class="search-input"
+                           maxlength="100"
+                           spellcheck="false"
+                           autocomplete="off">
+                </div>
+            </div>
+            <div class="stats-table-wrap">
+                <table class="stats-table" id="statsTable">
+                    <thead><tr>
+                        <th class="sortable" data-sort="nick">Участник</th>
+                        <th>Должность</th>
+                        <th class="sortable" data-sort="hours">Часы</th>
+                        <th class="sortable" data-sort="reports">Отчёты</th>
+                        <th class="sortable" data-sort="tickets">Тикеты</th>
+                        <th class="sortable" data-sort="salary">Итоговая ЗП</th>
+                        <th class="editor-only">Действия</th>
+                    </tr></thead>
+                    <tbody id="statsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="tab-content" id="tabSuspects" role="tabpanel">
+        <div class="section-block">
+            <h3 class="section-title section-title--shield">Сомнительные кадры</h3>
+            <div class="table-toolbar">
+                <div class="search-box">
+                    <i class="ic ic-search" aria-hidden="true"></i>
+                    <input type="search" id="suspectSearch" 
+                           placeholder="Поиск..." 
+                           class="search-input"
+                           maxlength="100"
+                           spellcheck="false"
+                           autocomplete="off">
+                </div>
+                <div class="filter-chips" role="group" aria-label="Фильтр по статусу">
+                    <button type="button" class="filter-chip active" data-filter-suspect="">Все</button>
+                    <button type="button" class="filter-chip" data-filter-suspect="watching">Активно</button>
+                    <button type="button" class="filter-chip" data-filter-suspect="warned">Не активно</button>
+                </div>
+            </div>
+            <div class="suspects-table-wrap">
+                <table class="stats-table suspects-table" id="suspectsTable">
+                    <thead><tr>
+                        <th>Участник</th>
+                        <th>SteamID</th>
+                        <th>Причина</th>
+                        <th class="sortable" data-sort="violations">Нарушения</th>
+                        <th class="sortable" data-sort="reports">Отчёты</th>
+                        <th>Статус</th>
+                        <th class="editor-only">Действия</th>
+                    </tr></thead>
+                    <tbody id="suspectsBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="editor-panel">
+            <button type="button" class="btn-add btn-add-blur" id="btnAddSuspect">+ Добавить сомнительного</button>
+        </div>
+    </section>
+
+
+    <section class="tab-content" id="tabReports" data-view="list" role="tabpanel">
+        <div class="section-block">
+            <div class="reports-header">
+                <h3 class="section-title section-title--msg">
+                    Отчёты <span class="reports-count" id="reportsCount">0</span>
+                </h3>
+                <div class="editor-panel reports-add-wrap">
+                    <button type="button" class="btn-add btn-add-blur" id="btnAddTopic">+ Создать тему</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-block">
+            <div class="topics-list" id="topicsList" data-draggable="true">
+                <div class="empty-msg">Загрузка тем...</div>
+            </div>
+        </div>
+
+        <div class="topic-view hidden" id="topicView">
+            <div class="topic-view-header">
+                <button type="button" class="topic-back-btn" id="topicBackBtn">
+                    <i class="ic ic-arrow-left" aria-hidden="true"></i>
+                    Назад к списку
+                </button>
+                <div class="topic-view-actions editor-panel" id="topicViewActions"></div>
+            </div>
+
+            <div class="topic-head" id="topicHead"></div>
+            <div class="topic-replies" id="topicReplies"></div>
+
+            <div class="topic-reply-form" id="topicReplyForm">
+                <div class="reply-form-box">
+                    <div class="reply-form-avatar">
+                        <img id="replyAvatar" 
+                             src="https://avatars.steamstatic.com/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_medium.jpg" 
+                             alt="Аватар"
+                             referrerpolicy="no-referrer"
+                             width="40" height="40">
+                    </div>
+                    <div class="reply-form-body">
+                        <textarea id="replyText" 
+                                  placeholder="Написать ответ..." 
+                                  rows="3" 
+                                  maxlength="2000"
+                                  spellcheck="true"></textarea>
+                        <div class="reply-form-footer">
+                            <span class="reply-char-count"><span id="replyCharCnt">0</span>/2000</span>
+                            <button type="button" class="btn-reply-send" id="btnSendReply">Отправить</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="topic-locked-msg hidden" id="topicLockedMsg" role="alert">
+                    Тема закрыта для ответов
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="tab-content" id="tabAutotrack" role="tabpanel">
+        <div class="autotrack-placeholder">
+            <div class="autotrack-image" aria-hidden="true"></div>
+            <p class="autotrack-text">Бюджета не хватило -_-</p>
+        </div>
+    </section>
+
+    <section class="tab-content" id="tabChecker" role="tabpanel">
+        <div class="section-block">
+            <div class="checker-header">
+                <h3 class="section-title section-title--shield">Steam Checker</h3>
+                <div class="checker-mode-switch">
+                    <button type="button" class="checker-mode-btn active" data-checker-mode="scanner">Сканер файлов</button>
+                    <button type="button" class="checker-mode-btn" data-checker-mode="terminal">Вручную</button>
+                    <button type="button" class="checker-paths-btn" id="checkerPathsToggle">Пути Steam</button>
+                </div>
+            </div>
+
+            <div class="checker-paths-panel hidden" id="checkerPathsPanel">
+                <code class="checker-path" data-copy>C:\Program Files (x86)\Steam\config\config.vdf</code>
+                <code class="checker-path" data-copy>C:\Program Files (x86)\Steam\config\avatarcache</code>
+                <code class="checker-path" data-copy>C:\Program Files (x86)\Steam\config\loginusers.vdf</code>
+                <code class="checker-path" data-copy>C:\Program Files (x86)\Steam\userdata</code>
+            </div>
+
+            <div class="checker-active-bar hidden" id="checkerActiveBar">
+                <span class="checker-active-label">ПОСЛЕДНИЙ:</span>
+                <span class="checker-active-id" id="checkerActiveId"></span>
+            </div>
+
+            <div class="checker-input-panel">
+                <div class="checker-section active" id="checkerScannerSection">
+                    <div class="checker-drop-zone" id="checkerDropZone">
+                        <i class="ic ic-plus" aria-hidden="true"></i>
+                        <span>Перетащите папку или файлы сюда</span>
+                        <span class="checker-drop-hint">или нажмите чтобы выбрать файлы</span>
+                    </div>
+                    <input type="file" id="checkerFileInput" multiple 
+                           accept=".vdf,.txt,.cfg,.ini,.log,.json,.png,.jpg,.jpeg"
+                           style="display:none">
+                </div>
+                <div class="checker-section" id="checkerTerminalSection">
+                    <textarea id="checkerManualInput" 
+                              class="checker-textarea" 
+                              placeholder="Вставьте текст, логи или ссылки на профили..."
+                              rows="5" maxlength="50000" spellcheck="false"></textarea>
+                    <button type="button" class="btn-save checker-extract-btn" id="checkerExtractBtn">Извлечь все SteamID</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-block">
+            <div class="checker-results" id="checkerResults">
+                <div class="empty-msg">Результаты появятся здесь</div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="tab-content" id="tabQuiz" data-active-page="questions" role="tabpanel">
+
+        <div class="quiz-inner-nav" id="quizNav" role="tablist" aria-label="Навигация опросника"></div>
+
+
+        <div class="quiz-page active" id="quizPageQuestions" role="tabpanel">
+            <div class="section-block">
+                <div class="quiz-questions-header">
+                    <h3 class="section-title section-title--help">
+                        База вопросов <span class="questions-count" id="questionsCount">0</span>
+                    </h3>
+                    <div class="quiz-filters">
+                        <select id="filterGroup" class="quiz-filter-select" aria-label="Фильтр по группе">
+                            <option value="">Все группы</option>
+                            <option value="terms">Термины</option>
+                            <option value="profession_rules">Правила профессий</option>
+                            <option value="admin_rules">Правила администрации</option>
+                            <option value="situations">Ситуации</option>
+                        </select>
+                        <select id="filterDifficulty" class="quiz-filter-select" aria-label="Фильтр по сложности">
+                            <option value="">Все сложности</option>
+                            <option value="easy">Лёгкая</option>
+                            <option value="medium">Средняя</option>
+                            <option value="hard">Высокая</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="quiz-questions-table-wrap">
+                    <table class="stats-table quiz-questions-table" id="questionsTable">
+                        <thead><tr>
+                            <th>№</th>
+                            <th>Группа</th>
+                            <th>Сложность</th>
+                            <th>Вопрос</th>
+                            <th>Ответ</th>
+                            <th class="editor-only">Действия</th>
+                        </tr></thead>
+                        <tbody id="questionsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="editor-panel">
+                <button type="button" class="btn-add btn-add-blur" id="btnAddQuestion">+ Добавить вопрос</button>
+            </div>
+        </div>
+
+
+        <div class="quiz-page" id="quizPageCreate" role="tabpanel">
+            <div class="section-block">
+                <h3 class="section-title section-title--plus">Создание опроса</h3>
+
+                <form id="quizSetupForm" class="quiz-setup-form" autocomplete="off" novalidate>
+                    <div class="quiz-form-grid">
+                        <fieldset class="quiz-fieldset">
+                            <legend>Данные администратора</legend>
+                            <label class="field">
+                                <span class="field__label">Тип обзвона</span>
+                                <select id="quizCallType" required>
+                                    <option value="initial">Первичный</option>
+                                    <option value="repeated">Повторный</option>
+                                    <option value="promotion">На повышение</option>
+                                    <option value="check">Проверочный</option>
+                                </select>
+                            </label>
+                            <label class="field">
+                                <span class="field__label">Ник</span>
+                                <input type="text" id="quizAdminNick" required 
+                                       maxlength="64" spellcheck="false" autocomplete="off">
+                            </label>
+                            <label class="field">
+                                <span class="field__label">Ранг</span>
+                                <select id="quizAdminRank" required>
+                                    <option value="intern">intern</option>
+                                    <option value="moderator">moderator</option>
+                                    <option value="operator">operator</option>
+                                    <option value="admin">admin</option>
+                                    <option value="senior_admin">senior_admin</option>
+                                    <option value="assistant">assistant</option>
+                                    <option value="sudo_curator">sudo_curator</option>
+                                    <option value="curator">curator</option>
+                                </select>
+                            </label>
+                            <label class="field">
+                                <span class="field__label">Steam ID</span>
+                                <input type="text" id="quizAdminSteam" required 
+                                       maxlength="30" 
+                                       pattern="STEAM_[01]:[01]:\d{1,15}"
+                                       spellcheck="false" autocomplete="off">
+                            </label>
+                            <label class="field">
+                                <span class="field__label">Discord</span>
+                                <input type="text" id="quizAdminDiscord" 
+                                       maxlength="100" spellcheck="false" autocomplete="off">
+                            </label>
+                        </fieldset>
+
+                        <fieldset class="quiz-fieldset">
+                            <legend>Параметры опроса</legend>
+                            <label class="field">
+                                <span class="field__label">Сложность</span>
+                                <select id="quizDifficulty" required>
+                                    <option value="mixed">Смешанная</option>
+                                    <option value="easy">Лёгкая</option>
+                                    <option value="medium">Средняя</option>
+                                    <option value="hard">Высокая</option>
+                                </select>
+                            </label>
+                            <label class="field">
+                                <span class="field__label">Макс. ошибок</span>
+                                <input type="number" id="quizMaxErrors" min="1" max="20" value="3" required step="1">
+                            </label>
+
+                            <div class="quiz-group-counts">
+                                <h4>Вопросов по группам</h4>
+                                <div class="quiz-group-row" data-group="terms">
+                                    <span>Термины</span>
+                                    <input type="number" id="quizCountTerms" min="0" max="50" value="2" 
+                                           class="quiz-count-input" step="1">
+                                    <span class="quiz-available" id="availTerms">0</span>
+                                </div>
+                                <div class="quiz-group-row" data-group="profession">
+                                    <span>Правила профессий</span>
+                                    <input type="number" id="quizCountProfession" min="0" max="50" value="2" 
+                                           class="quiz-count-input" step="1">
+                                    <span class="quiz-available" id="availProfession">0</span>
+                                </div>
+                                <div class="quiz-group-row" data-group="admin">
+                                    <span>Правила администрации</span>
+                                    <input type="number" id="quizCountAdmin" min="0" max="50" value="2" 
+                                           class="quiz-count-input" step="1">
+                                    <span class="quiz-available" id="availAdmin">0</span>
+                                </div>
+                                <div class="quiz-group-row" data-group="situations">
+                                    <span>Ситуации</span>
+                                    <input type="number" id="quizCountSituations" min="0" max="50" value="2" 
+                                           class="quiz-count-input" step="1">
+                                    <span class="quiz-available" id="availSituations">0</span>
+                                </div>
+                            </div>
+
+                            <div class="quiz-total-info">Итого: <strong id="quizTotalQuestions">8</strong></div>
+                        </fieldset>
+                    </div>
+
+                    <div class="form-actions quiz-start-actions">
+                        <button type="submit" class="btn-save quiz-start-btn">▶ Начать опрос</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+        <div class="quiz-page" id="quizPageActive" data-session="">
+            <div class="section-block">
+                <div class="quiz-session-bar">
+                    <div class="quiz-session-info">
+                        <span>Обзвон:</span>
+                        <b id="quizActiveAdmin">—</b>
+                        <span class="quiz-session-divider" aria-hidden="true">|</span>
+                        <span>Тип:</span>
+                        <b id="quizActiveType">—</b>
+                    </div>
+                    <div class="quiz-session-progress">
+                        <span id="quizProgressText">Вопрос 0 / 0</span>
+                        <div class="quiz-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                            <div class="quiz-progress-fill" id="quizProgressFill"></div>
+                        </div>
+                    </div>
+                    <div class="quiz-session-score">
+                        <span class="quiz-score-ok" id="quizScoreCorrect">✓ 0</span>
+                        <span class="quiz-score-fail" id="quizScoreWrong">✗ 0</span>
+                        <span class="quiz-score-limit">макс. ошибок: <span id="quizMaxErrorsShow">3</span></span>
+                    </div>
+                </div>
+
+                <div class="quiz-question-card" id="quizQuestionCard">
+                    <div class="quiz-question-meta">
+                        <span id="quizQNum">Вопрос 1</span>
+                        <span class="badge badge--group" id="quizQGroup">Термины</span>
+                        <span class="badge badge--diff" id="quizQDiff">Лёгкая</span>
+                    </div>
+                    <p class="quiz-question-text" id="quizQText">Загрузка вопроса...</p>
+                    <div class="quiz-answer-section">
+                        <label for="quizAnswerInput">Ответ администратора:</label>
+                        <textarea id="quizAnswerInput" rows="3" maxlength="2000"></textarea>
+                    </div>
+                    <div class="quiz-correct-answer hidden" id="quizCorrectAnswer">
+                        <strong>Правильный ответ:</strong>
+                        <p id="quizCorrectTxt"></p>
+                    </div>
+                    <div class="quiz-question-actions">
+                        <button type="button" class="btn-add quiz-btn-correct" id="quizBtnCorrect">✓ Правильно</button>
+                        <button type="button" class="btn-add quiz-btn-wrong" id="quizBtnWrong">✗ Неправильно</button>
+                        <button type="button" class="btn-add quiz-btn-reveal" id="quizBtnReveal">Показать ответ</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quiz-abort-section">
+                <button type="button" class="btn-cancel" id="quizBtnAbort">Прервать опрос</button>
+            </div>
+        </div>
+
+
+        <div class="quiz-page" id="quizPageResult">
+            <div class="section-block">
+                <div class="quiz-result-card" id="quizResultCard"></div>
+            </div>
+            <div class="form-actions quiz-result-actions">
+                <button type="button" class="btn-add" id="quizBtnNewQuiz">+ Новый опрос</button>
+                <button type="button" class="btn-add" id="quizGoHistory">История опросов</button>
+            </div>
+        </div>
+
+
+        <div class="quiz-page" id="quiz-page-history">
+            <div class="section-block">
+                <h3 class="section-title section-title--clock">История опросов</h3>
+                <div class="quiz-history-table-wrap">
+                    <table class="stats-table" id="quizHistoryTable">
+                        <thead><tr>
+                            <th>Дата</th>
+                            <th>Тип</th>
+                            <th>Админ</th>
+                            <th>Ранг</th>
+                            <th>Вопросов</th>
+                            <th>Верных</th>
+                            <th>Ошибок</th>
+                            <th>Результат</th>
+                            <th>Действия</th>
+                        </tr></thead>
+                        <tbody id="quizHistoryBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+</div><!-- /mainApp -->
+
+
+
+
+<div id="loadingScreen" class="hidden" role="status" aria-label="Загрузка">
+    <div class="loading-container">
+        <div class="loading-moon-bg" aria-hidden="true">
+            <div class="loading-moon"></div>
+            <div class="loading-moon-glow"></div>
+            <div class="loading-stars">
+                <span class="loading-star" style="--x:15%;--y:20%;--d:2.5s;--s:2px"></span>
+                <span class="loading-star" style="--x:80%;--y:10%;--d:3.1s;--s:1.5px"></span>
+                <span class="loading-star" style="--x:45%;--y:8%;--d:2.8s;--s:2.5px"></span>
+                <span class="loading-star" style="--x:70%;--y:35%;--d:3.5s;--s:1.8px"></span>
+                <span class="loading-star" style="--x:25%;--y:40%;--d:2.2s;--s:2px"></span>
+                <span class="loading-star" style="--x:90%;--y:25%;--d:3.8s;--s:1.2px"></span>
+                <span class="loading-star" style="--x:10%;--y:50%;--d:2.9s;--s:2.2px"></span>
+                <span class="loading-star" style="--x:55%;--y:45%;--d:3.3s;--s:1.6px"></span>
+                <span class="loading-star" style="--x:35%;--y:60%;--d:2.6s;--s:2px"></span>
+                <span class="loading-star" style="--x:65%;--y:55%;--d:3.0s;--s:1.4px"></span>
+            </div>
+        </div>
+        <div class="sleep-container" aria-hidden="true">
+            <img src="https://i.imgur.com/gykWRac.png" class="sleep-icon" alt=""
+                 referrerpolicy="no-referrer"
+                 loading="lazy"
+                 width="64" height="64">
+            <span class="z-letter z1">z</span>
+            <span class="z-letter z2">z</span>
+            <span class="z-letter z3">z</span>
+        </div>
+        <div class="loading-text">Загрузка данных...</div>
+        <div class="loading-subtext" id="loadingStatus" aria-live="polite">Подключение к серверу</div>
+        <div class="loading-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+            <div class="loading-bar-fill" id="loadingBarFill"></div>
+        </div>
+    </div>
+</div>
+
+
+<div class="toast hidden" id="toast" role="alert" aria-live="assertive"></div>
+
+
+<div id="corner-icon-widget" aria-hidden="true">
+    <img src="https://i.imgur.com/p1nZ95n.png" alt="" 
+         referrerpolicy="no-referrer"
+         width="70" height="70"
+         loading="lazy">
+</div>
+<div id="corner-icon-fx" aria-hidden="true"></div>
+
+
+<script src="js/script.js" defer></script>
+
+</body>
+</html>
